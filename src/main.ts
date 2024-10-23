@@ -28,16 +28,27 @@ const redoButton = document.createElement("button");
 redoButton.textContent = "Redo";
 app.appendChild(redoButton);
 
+const thinButton = document.createElement("button");
+thinButton.textContent = "Thin";
+app.appendChild(thinButton);
+
+const thickButton = document.createElement("button");
+thickButton.textContent = "Thick";
+app.appendChild(thickButton);
+
 const ctx = canvas.getContext("2d")!;
 let drawing = false;
 let lines: MarkerLine[] = [];
 let redoStack: MarkerLine[] = [];
+let currentThickness = 1;
 
 class MarkerLine {
     private points: { x: number, y: number }[] = [];
+    private thickness: number;
   
-    constructor(initialX: number, initialY: number) {
+    constructor(initialX: number, initialY: number, thickness: number) {
       this.points.push({ x: initialX, y: initialY });
+      this.thickness = thickness;
     }
   
     drag(x: number, y: number) {
@@ -46,6 +57,7 @@ class MarkerLine {
   
     display(ctx: CanvasRenderingContext2D) {
       ctx.beginPath();
+      ctx.lineWidth = this.thickness;
       this.points.forEach((point, index) => {
         if (index === 0) {
           ctx.moveTo(point.x, point.y);
@@ -62,7 +74,7 @@ canvas.addEventListener("mousedown", (event) => {
   const rect = canvas.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
-  const line = new MarkerLine(x, y);
+  const line = new MarkerLine(x, y, currentThickness);
   lines.push(line);
   ctx.beginPath();
 });
@@ -100,6 +112,18 @@ redoButton.addEventListener("click", () => {
       lines.push(lastLine!);
       canvas.dispatchEvent(new Event("drawing-changed"));
     }
+});
+
+thinButton.addEventListener("click", () => {
+    currentThickness = 1;
+    thinButton.classList.add("selectedTool");
+    thickButton.classList.remove("selectedTool");
+});
+  
+thickButton.addEventListener("click", () => {
+    currentThickness = 5;
+    thickButton.classList.add("selectedTool");
+    thinButton.classList.remove("selectedTool");
 });
 
 canvas.addEventListener("drawing-changed", () => {
