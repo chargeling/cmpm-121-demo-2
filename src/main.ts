@@ -30,14 +30,40 @@ app.appendChild(redoButton);
 
 const ctx = canvas.getContext("2d")!;
 let drawing = false;
-let lines: { x: number, y: number }[][] = [];
-let currentLine: { x: number, y: number }[] = [];
-let redoStack: { x: number, y: number }[][] = [];
+let lines: MarkerLine[] = [];
+let redoStack: MarkerLine[] = [];
 
-canvas.addEventListener("mousedown", () => {
+class MarkerLine {
+    private points: { x: number, y: number }[] = [];
+  
+    constructor(initialX: number, initialY: number) {
+      this.points.push({ x: initialX, y: initialY });
+    }
+  
+    drag(x: number, y: number) {
+      this.points.push({ x, y });
+    }
+  
+    display(ctx: CanvasRenderingContext2D) {
+      ctx.beginPath();
+      this.points.forEach((point, index) => {
+        if (index === 0) {
+          ctx.moveTo(point.x, point.y);
+        } else {
+          ctx.lineTo(point.x, point.y);
+        }
+      });
+      ctx.stroke();
+    }
+}
+
+canvas.addEventListener("mousedown", (event) => {
   drawing = true;
-  currentLine = [];
-  lines.push(currentLine);
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const line = new MarkerLine(x, y);
+  lines.push(line);
   ctx.beginPath();
 });
 
@@ -46,7 +72,7 @@ canvas.addEventListener("mousemove", (event) => {
   const rect = canvas.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
-  currentLine.push({ x, y });
+  lines[lines.length - 1].drag(x, y);
   canvas.dispatchEvent(new Event("drawing-changed"));
 });
 
@@ -66,27 +92,17 @@ undoButton.addEventListener("click", () => {
       redoStack.push(lastLine!);
       canvas.dispatchEvent(new Event("drawing-changed"));
     }
-  });
+});
   
-  redoButton.addEventListener("click", () => {
+redoButton.addEventListener("click", () => {
     if (redoStack.length > 0) {
       const lastLine = redoStack.pop();
       lines.push(lastLine!);
       canvas.dispatchEvent(new Event("drawing-changed"));
     }
-  });
+});
 
 canvas.addEventListener("drawing-changed", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    lines.forEach(line => {
-      ctx.beginPath();
-      line.forEach((point, index) => {
-        if (index === 0) {
-          ctx.moveTo(point.x, point.y);
-        } else {
-          ctx.lineTo(point.x, point.y);
-        }
-      });
-      ctx.stroke();
-    });
-  });
+    lines.forEach(line => line.display(ctx));
+});
