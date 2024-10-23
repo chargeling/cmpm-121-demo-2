@@ -20,10 +20,19 @@ const clearButton = document.createElement("button");
 clearButton.textContent = "Clear";
 app.appendChild(clearButton);
 
+const undoButton = document.createElement("button");
+undoButton.textContent = "Undo";
+app.appendChild(undoButton);
+
+const redoButton = document.createElement("button");
+redoButton.textContent = "Redo";
+app.appendChild(redoButton);
+
 const ctx = canvas.getContext("2d")!;
 let drawing = false;
 let lines: { x: number, y: number }[][] = [];
 let currentLine: { x: number, y: number }[] = [];
+let redoStack: { x: number, y: number }[][] = [];
 
 canvas.addEventListener("mousedown", () => {
   drawing = true;
@@ -47,8 +56,25 @@ canvas.addEventListener("mouseup", () => {
 
 clearButton.addEventListener("click", () => {
     lines = [];
+    redoStack = [];
     canvas.dispatchEvent(new Event("drawing-changed"));
 });
+
+undoButton.addEventListener("click", () => {
+    if (lines.length > 0) {
+      const lastLine = lines.pop();
+      redoStack.push(lastLine!);
+      canvas.dispatchEvent(new Event("drawing-changed"));
+    }
+  });
+  
+  redoButton.addEventListener("click", () => {
+    if (redoStack.length > 0) {
+      const lastLine = redoStack.pop();
+      lines.push(lastLine!);
+      canvas.dispatchEvent(new Event("drawing-changed"));
+    }
+  });
 
 canvas.addEventListener("drawing-changed", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
