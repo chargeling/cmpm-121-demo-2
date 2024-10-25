@@ -40,6 +40,10 @@ const customStickerButton = document.createElement("button");
 customStickerButton.textContent = "Add Custom Sticker";
 app.appendChild(customStickerButton);
 
+const exportButton = document.createElement("button");
+exportButton.textContent = "Export";
+app.appendChild(exportButton);
+
 const stickers = [
   { content: "😤", button: null },
   { content: "🥶", button: null },
@@ -256,6 +260,19 @@ thickButton.addEventListener("click", () => {
     thickButton.classList.add("selectedTool");
     thinButton.classList.remove("selectedTool");
     stickers.forEach(s => s.button.classList.remove("selectedTool"));
+});
+
+exportButton.addEventListener("click", () => {
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = 1024;
+    exportCanvas.height = 1024;
+    const exportCtx = exportCanvas.getContext("2d")!;
+    exportCtx.scale(4, 4);
+    lines.forEach(line => line.display(exportCtx));
+    const link = document.createElement("a");
+    link.href = exportCanvas.toDataURL("image/png");
+    link.download = "drawing.png";
+    link.click();
 });
 
 
