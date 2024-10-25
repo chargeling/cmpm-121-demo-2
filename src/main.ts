@@ -48,6 +48,8 @@ const stickers = [
   { content: "😤", button: null },
   { content: "🥶", button: null },
   { content: "🏹", button: null },
+  { content: "👊", button: null },
+  { content: "✌️", button: null },
 ];
 
 const ctx = canvas.getContext("2d")!;
@@ -247,7 +249,7 @@ redoButton.addEventListener("click", () => {
 });
 
 thinButton.addEventListener("click", () => {
-    currentThickness = 1;
+    currentThickness = 2;
     currentSticker = null;
     thinButton.classList.add("selectedTool");
     thickButton.classList.remove("selectedTool");
@@ -255,7 +257,7 @@ thinButton.addEventListener("click", () => {
 });
   
 thickButton.addEventListener("click", () => {
-    currentThickness = 5;
+    currentThickness = 7;
     currentSticker = null;
     thickButton.classList.add("selectedTool");
     thinButton.classList.remove("selectedTool");
