@@ -36,17 +36,15 @@ const thickButton = document.createElement("button");
 thickButton.textContent = "Thick";
 app.appendChild(thickButton);
 
-const sticker1Button = document.createElement("button");
-sticker1Button.textContent = "😤";
-app.appendChild(sticker1Button);
+const customStickerButton = document.createElement("button");
+customStickerButton.textContent = "Add Custom Sticker";
+app.appendChild(customStickerButton);
 
-const sticker2Button = document.createElement("button");
-sticker2Button.textContent = "🥶";
-app.appendChild(sticker2Button);
-
-const sticker3Button = document.createElement("button");
-sticker3Button.textContent = "🏹";
-app.appendChild(sticker3Button);
+const stickers = [
+  { content: "😤", button: null },
+  { content: "🥶", button: null },
+  { content: "🏹", button: null },
+];
 
 const ctx = canvas.getContext("2d")!;
 let drawing = false;
@@ -150,6 +148,32 @@ class StickerPreview {
     }
 }
 
+function createStickerButton(sticker) {
+    const button = document.createElement("button");
+    button.textContent = sticker.content;
+    button.addEventListener("click", () => {
+      currentSticker = sticker.content;
+      stickers.forEach(s => s.button.classList.remove("selectedTool"));
+      button.classList.add("selectedTool");
+      thinButton.classList.remove("selectedTool");
+      thickButton.classList.remove("selectedTool");
+      canvas.dispatchEvent(new Event("tool-moved"));
+    });
+    app.appendChild(button);
+    sticker.button = button;
+}
+
+stickers.forEach(createStickerButton);
+
+customStickerButton.addEventListener("click", () => {
+    const customSticker = prompt("Enter custom sticker:", "😊");
+    if (customSticker) {
+      const newSticker = { content: customSticker, button: null };
+      stickers.push(newSticker);
+      createStickerButton(newSticker);
+    }
+});
+
 canvas.addEventListener("mousedown", (event) => {
   const rect = canvas.getBoundingClientRect();
   const x = event.clientX - rect.left;
@@ -223,9 +247,7 @@ thinButton.addEventListener("click", () => {
     currentSticker = null;
     thinButton.classList.add("selectedTool");
     thickButton.classList.remove("selectedTool");
-    sticker1Button.classList.remove("selectedTool");
-    sticker2Button.classList.remove("selectedTool");
-    sticker3Button.classList.remove("selectedTool");
+    stickers.forEach(s => s.button.classList.remove("selectedTool"));
 });
   
 thickButton.addEventListener("click", () => {
@@ -233,40 +255,9 @@ thickButton.addEventListener("click", () => {
     currentSticker = null;
     thickButton.classList.add("selectedTool");
     thinButton.classList.remove("selectedTool");
-    sticker1Button.classList.remove("selectedTool");
-    sticker2Button.classList.remove("selectedTool");
-    sticker3Button.classList.remove("selectedTool");
+    stickers.forEach(s => s.button.classList.remove("selectedTool"));
 });
 
-sticker1Button.addEventListener("click", () => {
-    currentSticker = "😤";
-    sticker1Button.classList.add("selectedTool");
-    sticker2Button.classList.remove("selectedTool");
-    sticker3Button.classList.remove("selectedTool");
-    thinButton.classList.remove("selectedTool");
-    thickButton.classList.remove("selectedTool");
-    canvas.dispatchEvent(new Event("tool-moved"));
-});
-
-sticker2Button.addEventListener("click", () => {
-    currentSticker = "🥶";
-    sticker2Button.classList.add("selectedTool");
-    sticker1Button.classList.remove("selectedTool");
-    sticker3Button.classList.remove("selectedTool");
-    thinButton.classList.remove("selectedTool");
-    thickButton.classList.remove("selectedTool");
-    canvas.dispatchEvent(new Event("tool-moved"));
-});
-
-sticker3Button.addEventListener("click", () => {
-    currentSticker = "🏹";
-    sticker3Button.classList.add("selectedTool");
-    sticker1Button.classList.remove("selectedTool");
-    sticker2Button.classList.remove("selectedTool");
-    thinButton.classList.remove("selectedTool");
-    thickButton.classList.remove("selectedTool");
-    canvas.dispatchEvent(new Event("tool-moved"));
-});
 
 canvas.addEventListener("drawing-changed", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
